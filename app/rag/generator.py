@@ -1,15 +1,17 @@
 import os
-import time
 from dotenv import load_dotenv
-from google import genai
+from groq import Groq
 
 load_dotenv()
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
+client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
-MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+MODEL = os.getenv(
+    "GROQ_MODEL",
+    "llama-3.3-70b-versatile"
+)
 
 
 def generate_answer(question: str, retrieved_data):
@@ -30,66 +32,46 @@ def generate_answer(question: str, retrieved_data):
     prompt = f"""
 You are an expert AI research analyst.
 
-Answer ONLY using the provided context.
+Use ONLY the supplied context to answer the user's question.
 
-=========================
-CONTEXT
-=========================
-
+Context:
 {context}
 
-=========================
-QUESTION
-=========================
-
+Question:
 {question}
 
-Generate a professional research report using this structure:
+Create a professional report with the following structure:
 
 # Research Report
 
 ## Executive Summary
 
-Provide a short summary.
-
 ## Key Findings
-
-List the main findings using bullet points.
 
 ## Detailed Analysis
 
-Provide a detailed explanation using only the supplied context.
-
 ## Conclusion
-
-Summarize the research in a few sentences.
 
 ## References
 
-Use ONLY the following references.
+Use ONLY these references:
 
 {references}
 """
 
-    last_exception = None
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful research assistant."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.3,
+    )
 
-    # Retry up to 3 times if Gemini is temporarily busy
-    for attempt in range(3):
-        try:
-            response = client.models.generate_content(
-                model=MODEL,
-                contents=prompt
-            )
-
-            return response.text
-
-        except Exception as e:
-            last_exception = e
-            print(f"Attempt {attempt + 1}/3 failed.")
-            print(e)
-
-            if attempt < 2:
-                print("Retrying in 5 seconds...\n")
-                time.sleep(5)
-
-    raise last_exception
+    return response.choices[0].message.content
