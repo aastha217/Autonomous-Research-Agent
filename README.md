@@ -9,6 +9,7 @@ The application automates the research workflow by searching the web, extracting
 ## Workflow
 
 
+```text
 User Query
     │
     ▼
@@ -34,6 +35,7 @@ Report Generation (Groq – Llama 3)
     │
     ▼
 Markdown Research Report
+```
 
 
 The generated report is grounded in retrieved web content rather than relying solely on the language model's internal knowledge, improving factual relevance and reducing unsupported information.
