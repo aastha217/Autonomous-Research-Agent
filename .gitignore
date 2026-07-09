@@ -2,4 +2,7 @@
 venv/
 __pycache__/
 *.pyc
+logs/
+reports/
 data/chroma_db/
+.vscode/
